@@ -22,6 +22,6 @@ pub const DatagramSocket = struct {
         addr: net.Address,
         msg: []const u8,
     ) SendToError!void {
-        try posix.sendto(this.socket, msg, 0, &addr.any, addr.getOsSockLen());
+        _ = try posix.sendto(this.socket, msg, 0, &addr.any, addr.getOsSockLen());
     }
 };
