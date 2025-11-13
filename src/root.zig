@@ -4,24 +4,37 @@ const net = std.net;
 const SendToError = posix.SendToError;
 const SocketError = posix.SocketError;
 const INET = posix.AF.INET;
+const INET6 = posix.AF.INET6;
 const DGRAM = posix.SOCK.DGRAM;
 
-pub const DatagramSocket = struct {
-    socket: posix.socket_t,
+/// Socket for sending stateless datagrams over the network, e.g., for UDP.
+pub fn DatagramSocket(family: posix.sa_family_t) type {
+    return struct {
+        fd: posix.socket_t,
 
-    pub fn open() SocketError!DatagramSocket {
-        return .{ .socket = try posix.socket(INET, DGRAM, 0) };
-    }
+        /// Open a new socket.
+        pub fn open() SocketError!@This() {
+            return .{ .fd = try posix.socket(family, DGRAM, 0) };
+        }
 
-    pub fn close(this: DatagramSocket) void {
-        posix.close(this.socket);
-    }
+        /// Close this socket.
+        pub fn close(this: @This()) void {
+            posix.close(this.fd);
+        }
 
-    pub fn sendto(
-        this: DatagramSocket,
-        addr: net.Address,
-        msg: []const u8,
-    ) SendToError!void {
-        _ = try posix.sendto(this.socket, msg, 0, &addr.any, addr.getOsSockLen());
-    }
-};
+        /// Send a datagram message to an address.  The address family must
+        /// match the address family of this socket.
+        pub fn sendto(
+            this: @This(),
+            addr: net.Address,
+            msg: []const u8,
+        ) SendToError!void {
+            _ = try posix.sendto(this.fd, msg, 0, &addr.any, addr.getOsSockLen());
+        }
+    };
+}
+
+/// Socket for sending stateless datagrams over IPv4.
+pub const DatagramSocketv4 = DatagramSocket(posix.AF.INET);
+/// Socket for sending stateless datagrams over IPv6.
+pub const DatagramSocketv6 = DatagramSocket(posix.AF.INET6);
