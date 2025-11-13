@@ -13,6 +13,10 @@ pub const DatagramSocket = struct {
         return .{ .socket = try posix.socket(INET, DGRAM, 0) };
     }
 
+    pub fn close(this: DatagramSocket) void {
+        posix.close(this.socket);
+    }
+
     pub fn sendto(
         this: DatagramSocket,
         addr: net.Address,
