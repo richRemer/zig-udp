@@ -1,6 +1,6 @@
 .{
     .name = .zig_udp,
-    .version = "0.0.5",
+    .version = "0.0.6",
     .fingerprint = 0x415dcf046bd511c6,
     .minimum_zig_version = "0.15.2",
     .dependencies = .{},

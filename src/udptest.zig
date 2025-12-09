@@ -6,7 +6,18 @@ const net = std.net;
 
 pub fn main() !void {
     const opts = try getopts();
-    _ = try udp.sendto(opts.addr, "foo\n");
+    const family = udp.Socket.Family.fromAddress(opts.addr);
+    const socket = try udp.Socket.open(family);
+    var buf: [2048]u8 = undefined;
+
+    if (opts.listen) {
+        try socket.bind(opts.addr);
+        const packet = try socket.recv(&buf);
+        std.debug.print("from: {any}\n", .{packet.from});
+        std.debug.print("message: {s}\n", .{packet.data});
+    } else {
+        try socket.send(opts.addr, "foo\n");
+    }
 }
 
 const Options = struct {
