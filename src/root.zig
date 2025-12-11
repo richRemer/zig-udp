@@ -6,9 +6,12 @@ const BindError = posix.BindError;
 const RecvFromError = posix.RecvFromError;
 const SendToError = posix.SendToError;
 const SocketError = posix.SocketError;
+
 const INET = posix.AF.INET;
 const INET6 = posix.AF.INET6;
 const DGRAM = posix.SOCK.DGRAM;
+const NONBLOCK = posix.SOCK.NONBLOCK;
+const CLOEXEC = posix.SOCK.CLOEXEC;
 const UDP = posix.IPPROTO.UDP;
 
 pub const Packet = struct {
@@ -28,6 +31,22 @@ pub const Socket = struct {
         }
     };
 
+    pub const Options = packed struct {
+        /// Open socket in non-blocking mode.
+        nonblock: bool = false,
+        /// Set close-on-execute flag on socket.
+        cloexec: bool = false,
+
+        /// Return flags to be combined bitwise with the socket type when
+        /// opening the socket.
+        fn getPosixType(this: Options) u32 {
+            var typ: u32 = 0;
+            if (this.nonblock) typ |= NONBLOCK;
+            if (this.cloexec) typ |= CLOEXEC;
+            return typ;
+        }
+    };
+
     pub fn bind(this: Socket, addr: Address) BindError!void {
         try posix.bind(this.sock, &addr.any, addr.getOsSockLen());
     }
@@ -36,9 +55,11 @@ pub const Socket = struct {
         posix.close(this.sock);
     }
 
-    pub fn open(family: Family) SocketError!Socket {
+    pub fn open(family: Family, options: Options) SocketError!Socket {
+        const typ = DGRAM | options.getPosixType();
+
         return .{
-            .sock = try posix.socket(@intFromEnum(family), DGRAM, UDP),
+            .sock = try posix.socket(@intFromEnum(family), typ, UDP),
         };
     }
 
