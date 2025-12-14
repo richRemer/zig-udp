@@ -12,9 +12,9 @@ pub fn main() !void {
 
     if (opts.listen) {
         try socket.bind(opts.addr);
-        const packet = try socket.recv(&buf);
-        std.debug.print("from: {any}\n", .{packet.from});
-        std.debug.print("message: {s}\n", .{packet.data});
+        const datagram = try socket.recv(&buf);
+        std.debug.print("from: {any}\n", .{datagram.from});
+        std.debug.print("message: {s}\n", .{datagram.data});
     } else {
         try socket.send(opts.addr, "foo\n");
     }
